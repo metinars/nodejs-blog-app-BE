@@ -25,6 +25,7 @@ app.use('/blog', blogRoutes);
 // app.use('/blog', blogRoutes);
 // app.use(authRoutes);
 app.use('/admin', adminRoutes);
+app.use('/', authRoutes);
 
 // app.use((req, res) => {
 //   res.status(404).render('404');
