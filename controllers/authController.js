@@ -1,25 +1,65 @@
 const User = require('../models/users');
 
-const signup_post = async (req, res, next) => {
-    const { userName, password } = req.body;
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken');
 
-    const user = new User({
-        username: userName,
-        password: password
-    });
+SECRET_TOKEN = 'token';
 
+const register = async (req, res, next) => {
     try {
-        await user
-            .save()
-            .then((result) => {
-                console.log('user post');
-            }).catch((err) => console.log(err));
-    } catch (err) {
-        return next(err)
+        const { username, password } = req.body;
+        const checkUser = await User.findOne({ username })
+
+        if (checkUser) {
+            return res.status(500).json({ message: 'Böyle bir kullanıcı adı kullanılmakta!' });
+        }
+
+        if (password.length < 6) {
+            return res.status(500).json({ message: 'Parolanız 6 karakterden küçük olamaz!' })
+        }
+
+        const passwordHash = await bcrypt.hash(password, 12);
+
+        const newUser = await User.create({ username, password: passwordHash })
+
+        const userToken = jwt.sign({ id: newUser.id }, SECRET_TOKEN, { expiresIn: '1h' });
+
+        res.status(201).json({
+            status: 'OK',
+            newUser,
+            userToken
+        })
+
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
     }
-    res.json(user);
-};
+}
+
+const login = async (req, res, next) => {
+    try {
+        const { username, password } = req.body;
+        const checkUsername = await User.findOne({ username });
+
+        if (!checkUsername) {
+            return res.status(500).json({ message: 'Kullanıcı bulunamadı!' });
+        }
+        const comparePassword = await bcrypt.compare(password, checkUsername.password)
+
+        if (!comparePassword) {
+            return res.status(500).json({ message: 'Parolanız yanlış!' });
+        }
+
+        res.status(201).json({
+            status: 'OK',
+            checkUsername
+        })
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+
+}
 
 module.exports = {
-    signup_post
+    register,
+    login
 }

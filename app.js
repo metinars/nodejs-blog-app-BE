@@ -6,6 +6,7 @@ const cors = require('cors');
 const blogRoutes = require('./routes/blogRoutes');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const authMiddle = require('./middleware/authMiddle')
 
 const app = express();
 
@@ -24,7 +25,7 @@ app.use(cors());
 app.use('/blog', blogRoutes);
 // app.use('/blog', blogRoutes);
 // app.use(authRoutes);
-app.use('/admin', adminRoutes);
+app.use('/admin', authMiddle, adminRoutes);
 app.use('/', authRoutes);
 
 // app.use((req, res) => {

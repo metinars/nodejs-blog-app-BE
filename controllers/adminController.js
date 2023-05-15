@@ -4,57 +4,68 @@ const admin_index = (req, res, next) => {
   let blogs;
   try {
     blogs = Blog.find();
-  } catch (err) {
-    console.log(err);
-    return next(err);
+    return res.status(201).json({
+      title: blogs.title,
+      short: blogs.short
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: error.message });
   }
-  res.json({ title: blogs.title, shor: blogs.short });
 };
 
-const admin_add = (req, res, next) => {
-  res.render('add');
+const admin_get_detail = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const detailPost = await Blog.findById(id)
+    res.status(200).json({
+      detailPost
+    })
+  } catch (error) {
+    return res.status(500).json({ message: error.message })
+  }
 };
 
 const admin_add_post = async (req, res, next) => {
-  const {title, short, long} = req.body;
-
-  const blog = new Blog({
-    title: title,
-    short: short,
-    long: long
-  });
-  
-    try {
-        await blog
-            .save()
-            .then((result) => {
-                console.log('post');
-            })
-            .catch((err) => console.log(err));
-    } catch (err) {
-        return next(err)
-    }
-    res.json(blog);
-
+  try {
+    const newPost = await Blog.create(req.body);
+    res.status(201).json({
+      newPost
+    })
+  } catch (error) {
+    return res.status(500).json({ message: error.message })
+  }
 };
 
-const admin_delete = (req, res, next) => {
-  const id = req.params.id;
+// const admin_delete = (req, res, next) => {
+//   const id = req.params.id;
 
-  let blogDelete;
+//   let blogDelete;
 
+//   try {
+//     blogDelete = Blog.findByIdAndDelete(id);
+//   } catch (err) {
+//     console.log(err);
+//     return next(err);
+//   }
+//   res.status(200).json({ message: 'Blog deleted', noteId: id });
+// };
+
+const admin_delete = async (req, res, next) => {
   try {
-    blogDelete = Blog.findByIdAndDelete(id);
-  } catch (err) {
-    console.log(err);
-    return next(err);
+    const { id } = req.params;
+    await Blog.findByIdAndRemove(id)
+    res.status(200).json({
+      message: 'Deleting success!'
+    })
+  } catch (error) {
+    return res.status(500).json({ message: error.message })
   }
-  res.status(200).json({ message: 'Blog deleted', noteId: id });
 };
 
 module.exports = {
   admin_index,
-  admin_add,
+  admin_get_detail,
   admin_add_post,
   admin_delete,
 };
