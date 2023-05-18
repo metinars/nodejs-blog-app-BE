@@ -1,15 +1,24 @@
 const Blog = require('../models/blogs');
+const User = require('../models/users');
 
-const admin_index = (req, res, next) => {
-  let blogs;
+const admin_index = async (req, res, next) => {
+  // let blogs;
+  // try {
+  //   blogs = Blog.find();
+  //   return res.status(201).json({
+  //     title: blogs.title,
+  //     short: blogs.short
+  //   });
+  // } catch (error) {
+  //   console.log(error);
+  //   return res.status(500).json({ message: error.message });
+  // }
   try {
-    blogs = Blog.find();
-    return res.status(201).json({
-      title: blogs.title,
-      short: blogs.short
-    });
+    const getAllPosts = await User.find()
+    res.status(200).json({
+      getAllPosts
+    })
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: error.message });
   }
 };
