@@ -1,25 +1,43 @@
+const User = require('../models/users');
 const jwt = require('jsonwebtoken');
 
-SECRET_TOKEN = 'token';
+const requireAuth = (req, res, next) => {
+    const token = req.cookies.jwt;
 
-const authMiddle = async (req, res, next) => {
-    try {
-        const token = req.headers.authorization.split('')[1];
-        let decodedData;
-
-        if (toke) {
-            decodedData = jwt.verify(token, SECRET_TOKEN)
-
-            req.userId = decodedData?.id
-        } else {
-            decodedData = jwt.decode(token)
-
-            req.userId = decodedData?.sub
-        }
-        next();
-    } catch (error) {
-        console.log(error.message);
+    if (token) {
+        jwt.verify(token, 'gizli kelime', (err, decodedToken) => {
+            if (err) {
+                console.log(err);
+                res.redirect('/login');
+            } else {
+                console.log(decodedToken);
+                next();
+            }
+        });
+    } else {
+        res.redirect('/login');
     }
-}
+};
 
-module.exports = authMiddle
+const checkUser = (req, res, next) => {
+    const token = req.cookies.jwt;
+
+    if (token) {
+        jwt.verify(token, 'gizli kelime', async (err, decodedToken) => {
+            if (err) {
+                console.log(err);
+                res.locals.user = null;
+            } else {
+          console.log(decodedToken);
+          let user = await User.findById(decodedToken.id);
+          res.locals.user = user;
+          next();
+      }
+    });
+  } else {
+      res.locals.user = null;
+      next();
+  }
+};
+
+module.exports = { requireAuth, checkUser };

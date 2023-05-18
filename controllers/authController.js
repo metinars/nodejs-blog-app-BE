@@ -5,6 +5,11 @@ const jwt = require('jsonwebtoken');
 
 SECRET_TOKEN = 'token';
 
+const maxAge = 60 * 60 * 24;
+const createToken = (id) => {
+    return jwt.sign({ id }, 'gizli kelime', { expiresIn: maxAge });
+};
+
 const register = async (req, res, next) => {
     try {
         const { username, password } = req.body;
@@ -22,12 +27,12 @@ const register = async (req, res, next) => {
 
         const newUser = await User.create({ username, password: passwordHash })
 
-        const userToken = jwt.sign({ id: newUser.id }, SECRET_TOKEN, { expiresIn: '1h' });
+        // const userToken = jwt.sign({ id: newUser.id }, SECRET_TOKEN, { expiresIn: '1h' });
 
         res.status(201).json({
             status: 'OK',
             newUser,
-            userToken
+            // userToken
         })
 
     } catch (error) {
@@ -38,25 +43,29 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
     try {
         const { username, password } = req.body;
-        const checkUsername = await User.findOne({ username });
+        const user = await User.findOne({ username });
 
-        if (!checkUsername) {
+        if (!user) {
             return res.status(500).json({ message: 'Kullanıcı bulunamadı!' });
         }
-        const comparePassword = await bcrypt.compare(password, checkUsername.password)
+        const comparePassword = await bcrypt.compare(password, user.password)
 
         if (!comparePassword) {
             return res.status(500).json({ message: 'Parolanız yanlış!' });
+        } else {
+            const token = createToken(user._id);
+            res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 });
+            console.log('giriş başarılı');
+            res.status(201).json({
+                status: 'OK',
+                user,
+                token
+            })
         }
 
-        res.status(201).json({
-            status: 'OK',
-            checkUsername
-        })
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
-
 }
 
 module.exports = {

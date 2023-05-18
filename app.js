@@ -2,11 +2,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const cookiesParser = require('cookie-parser');
 
 const blogRoutes = require('./routes/blogRoutes');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
-const authMiddle = require('./middleware/authMiddle')
+// const authMiddle = require('./middleware/authMiddle')
+const { requireAuth, checkUser } = require('./middleware/authMiddle');
 
 const app = express();
 
@@ -15,7 +17,7 @@ const url =
 
 
 app.use(bodyParser.json());
-
+app.use(cookiesParser());
 app.use(cors());
 
 //co
@@ -25,8 +27,10 @@ app.use(cors());
 app.use('/blog', blogRoutes);
 // app.use('/blog', blogRoutes);
 // app.use(authRoutes);
-app.use('/admin', authMiddle, adminRoutes);
+app.use('/admin', requireAuth, adminRoutes);
 app.use('/', authRoutes);
+
+app.get('*', checkUser);
 
 // app.use((req, res) => {
 //   res.status(404).render('404');
