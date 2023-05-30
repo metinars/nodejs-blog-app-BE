@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const authMiddle = require('./middleware/authMiddle');
 
 const app = express();
 
@@ -16,6 +17,7 @@ const url =
   process.env.passwordDB +
   '@nodejsblog.miwle5d.mongodb.net/?retryWrites=true&w=majority';
 
+// app.get('*', checkUser);
 app.use(bodyParser.json());
 app.use(cors());
 app.use('/admin', adminRoutes);

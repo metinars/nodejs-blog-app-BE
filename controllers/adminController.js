@@ -3,7 +3,6 @@ const Blog = require('../models/blogs');
 const adminGetAll = async (req, res, next) => {
   try {
     const getAllPosts = await Blog.find();
-    console.log(getAllPosts);
     return res.status(200).json({ getAllPosts });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -13,9 +12,9 @@ const adminGetAll = async (req, res, next) => {
 const adminGetDetail = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const detailPost = await Blog.findById(id);
+    const getDetailPost = await Blog.findById(id);
     res.status(200).json({
-      detailPost,
+      getDetailPost,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -33,7 +32,7 @@ const adminAddPost = async (req, res, next) => {
   }
 };
 
-const adminDelete = async (req, res, next) => {
+const adminPostDelete = async (req, res, next) => {
   try {
     const { id } = req.params;
     await Blog.findByIdAndRemove(id);
@@ -49,5 +48,5 @@ module.exports = {
   adminGetAll,
   adminGetDetail,
   adminAddPost,
-  adminDelete,
+  adminPostDelete,
 };
